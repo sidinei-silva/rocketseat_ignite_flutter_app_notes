@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:notes/shared/auth/auth_controller.dart';
+import 'package:notes/shared/auth/auth_state.dart';
 import 'package:notes/shared/theme/app_theme.dart';
 
 class LoginPage extends StatefulWidget {
@@ -9,6 +11,20 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  late AuthController authController;
+
+  @override
+  void initState() {
+    authController = AuthController(onUpdate: () {
+      if (authController.authState is AuthStateSuccess) {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        setState(() {});
+      }
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,27 +57,38 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(
                       height: 20,
                     ),
-                    ElevatedButton(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.lock,
-                            color: AppTheme.colors.loginTextButton,
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Text(
-                            "Conta google",
-                            style: AppTheme.textStyles.loginTextButton,
-                          ),
-                        ],
-                      ),
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                          primary: AppTheme.colors.loginPrimaryColorButton),
-                    )
+                    if (authController.authState is AuthStateLoading) ...[
+                      CircularProgressIndicator(
+                        color: Colors.white,
+                      )
+                    ] else if (AuthState is AuthStateFailure) ...[
+                      Text((AuthState as AuthStateFailure).message)
+                    ] else ...[
+                      ElevatedButton(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.lock,
+                              color: AppTheme.colors.loginTextButton,
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text(
+                              "Conta google",
+                              style: AppTheme.textStyles.loginTextButton,
+                            ),
+                          ],
+                        ),
+                        onPressed: () {
+                          authController.googleSignIn();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          primary: AppTheme.colors.loginPrimaryColorButton,
+                        ),
+                      )
+                    ],
                   ],
                 ),
               ),
